@@ -104,6 +104,20 @@ input:focus-visible {
   outline-offset: 2px;
 }
 
+/* Sugerencias de ciudades */
+
+.suggestions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: -8px 0 16px;
+}
+
+.suggestions button {
+  background: transparent;
+  font-weight: 500;
+}
+
 /* ---------- Clima actual ---------- */
 
 .hero {
