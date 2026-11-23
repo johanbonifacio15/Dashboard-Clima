@@ -13,8 +13,15 @@
 <main>
   <header>
     <h1>Dashboard del clima</h1>
+    <div class="controls">
+      <form id="search" class="controls" role="search">
+        <input id="q" type="search" placeholder="Buscar ciudad…" aria-label="Buscar ciudad" autocomplete="off">
+        <button class="primary" type="submit">Buscar</button>
+      </form>
+    </div>
   </header>
 
+  <div id="suggestions" class="suggestions" hidden></div>
   <div id="status" class="panel state" role="status" aria-live="polite" hidden></div>
 
   <section id="dashboard" hidden>

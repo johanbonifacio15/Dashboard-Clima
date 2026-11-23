@@ -1,5 +1,6 @@
 (() => {
   const FORECAST_URL = "https://api.open-meteo.com/v1/forecast";
+  const GEO_URL = "https://geocoding-api.open-meteo.com/v1/search";
   const DEFAULT_PLACE = { name: "San Pedro de Macorís", country: "República Dominicana", latitude: 18.4617, longitude: -69.3086 };
 
   const WEATHER_CODES = {
@@ -34,6 +35,11 @@
     }
   }
 
+  const searchCities = async (name) => {
+    const data = await fetchJson(GEO_URL, { name, count: 5, language: "es", format: "json" });
+    return data.results || [];
+  };
+
   const getForecast = async ({ latitude, longitude }, unit) => {
     const data = await fetchJson(FORECAST_URL, {
       latitude, longitude, timezone: "auto", forecast_days: 7, temperature_unit: unit,
@@ -48,6 +54,7 @@
   // ---------- Estados de UI ----------
   function showLoading() {
     $("dashboard").hidden = true;
+    $("suggestions").hidden = true;
     const s = $("status");
     s.className = "panel state";
     s.innerHTML = '<div class="spinner"></div><div>Cargando datos…</div>';
@@ -103,6 +110,45 @@
       showError(err.message, load);
     }
   }
+
+  async function onSearch(e) {
+    e.preventDefault();
+    const name = $("q").value.trim();
+    if (name.length < 2) { showError("Escribe al menos 2 letras del nombre de la ciudad."); return; }
+    showLoading();
+    try {
+      const results = await searchCities(name);
+      if (!results.length) { showError(`No se encontró ninguna ciudad llamada "${name}". Revisa la ortografía.`); return; }
+      if (results.length === 1) return selectPlace(results[0]);
+      showSuggestions(results);
+      $("status").hidden = true;
+    } catch (err) {
+      showError(err.message, () => onSearch(e));
+    }
+  }
+
+  function showSuggestions(results) {
+    const box = $("suggestions");
+    box.innerHTML = "";
+    results.forEach((r) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.textContent = [r.name, r.admin1, r.country].filter(Boolean).join(", ");
+      b.addEventListener("click", () => selectPlace(r));
+      box.append(b);
+    });
+    box.hidden = false;
+    if (lastData) $("dashboard").hidden = false;
+  }
+
+  function selectPlace(r) {
+    state.place = { name: r.name, admin1: r.admin1, country: r.country, latitude: r.latitude, longitude: r.longitude };
+    $("suggestions").hidden = true;
+    $("q").value = "";
+    load();
+  }
+
+  $("search").addEventListener("submit", onSearch);
 
   load();
 })();
