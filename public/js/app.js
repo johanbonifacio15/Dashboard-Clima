@@ -13,15 +13,62 @@
   const $ = (id) => document.getElementById(id);
   const state = { place: DEFAULT_PLACE, unit: "celsius" };
 
-  async function getForecast({ latitude, longitude }, unit) {
-    const params = new URLSearchParams({
+  // ---------- Red con timeout y errores legibles ----------
+  class ApiError extends Error {}
+
+  async function fetchJson(url, params) {
+    const target = `${url}?${new URLSearchParams(params)}`;
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 10000);
+    try {
+      const res = await fetch(target, { signal: ctrl.signal });
+      if (res.status === 429) throw new ApiError("Demasiadas solicitudes. Espera un minuto y vuelve a intentar.");
+      if (!res.ok) throw new ApiError(`El servicio respondió con error ${res.status}. Intenta de nuevo en unos minutos.`);
+      return await res.json();
+    } catch (err) {
+      if (err instanceof ApiError) throw err;
+      if (err.name === "AbortError") throw new ApiError("La solicitud tardó demasiado. Revisa tu conexión e intenta de nuevo.");
+      throw new ApiError("No se pudo conectar. Revisa tu conexión a internet.");
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  const getForecast = async ({ latitude, longitude }, unit) => {
+    const data = await fetchJson(FORECAST_URL, {
       latitude, longitude, timezone: "auto", forecast_days: 7, temperature_unit: unit,
       current: "temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m",
       hourly: "temperature_2m,precipitation_probability",
       daily: "temperature_2m_max,temperature_2m_min,precipitation_sum"
     });
-    const res = await fetch(`${FORECAST_URL}?${params}`);
-    return res.json();
+    if (!data.current || !data.hourly || !data.daily) throw new ApiError("La respuesta del servicio llegó incompleta.");
+    return data;
+  };
+
+  // ---------- Estados de UI ----------
+  function showLoading() {
+    $("dashboard").hidden = true;
+    const s = $("status");
+    s.className = "panel state";
+    s.innerHTML = '<div class="spinner"></div><div>Cargando datos…</div>';
+    s.hidden = false;
+  }
+
+  function showError(message, retry) {
+    $("dashboard").hidden = true;
+    const s = $("status");
+    s.className = "panel state error";
+    s.innerHTML = "";
+    const p = document.createElement("p");
+    p.textContent = message;
+    s.append(p);
+    if (retry) {
+      const b = document.createElement("button");
+      b.textContent = "Reintentar";
+      b.addEventListener("click", retry);
+      s.append(b);
+    }
+    s.hidden = false;
   }
 
   // ---------- Render ----------
@@ -40,15 +87,20 @@
     $("wind").textContent = `${Math.round(c.wind_speed_10m)} km/h`;
     $("rain").textContent = `${daily.precipitation_sum[0].toFixed(1)} mm`;
 
+    $("status").hidden = true;
     $("dashboard").hidden = false;
   }
 
   // ---------- Flujo principal ----------
+  let lastData = null;
+
   async function load() {
+    showLoading();
     try {
-      render(await getForecast(state.place, state.unit));
+      lastData = await getForecast(state.place, state.unit);
+      render(lastData);
     } catch (err) {
-      console.error(err);
+      showError(err.message, load);
     }
   }
 

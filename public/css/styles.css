@@ -12,12 +12,11 @@
   --rain: #3a7bd5;
   --danger: #b3261e;
 
-  /* Tipografias */
   --display: "Bricolage Grotesque", "Trebuchet MS", sans-serif;
   --body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 
-/* Modo oscuro segun la preferencia del sistema */
+/* Modo oscuro (segun la preferencia del sistema) */
 @media (prefers-color-scheme: dark) {
   :root {
     --bg: #0b1a20;
@@ -158,6 +157,45 @@ dt {
 dd {
   margin: 0;
   font: 500 1.5rem var(--display);
+}
+
+/* ---------- Estados ---------- */
+
+.state {
+  text-align: center;
+  padding: 48px 16px;
+}
+
+.state.error {
+  border-color: var(--danger);
+}
+
+.state.error p {
+  color: var(--danger);
+  font-weight: 600;
+  margin: 0 0 12px;
+}
+
+.spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid var(--line);
+  border-top-color: var(--cold);
+  border-radius: 50%;
+  margin: 0 auto 12px;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation-duration: 3s;
+  }
 }
 
 /* ---------- Pie de pagina y utilidades ---------- */
