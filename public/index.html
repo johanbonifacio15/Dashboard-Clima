@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dashboard del clima</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<main>
+  <header>
+    <h1>Dashboard del clima</h1>
+  </header>
+
+
+  <section id="dashboard">
+    <div class="hero">
+      <div class="panel">
+        <p class="place" id="place">Ciudad</p>
+        <p class="temp"><span id="temp">--</span><small id="unit"></small></p>
+        <p class="cond" id="cond">Condición</p>
+      </div>
+      <div class="panel">
+        <dl>
+          <div><dt>Sensación térmica</dt><dd id="feels">--</dd></div>
+          <div><dt>Humedad</dt><dd id="humidity">--</dd></div>
+          <div><dt>Viento</dt><dd id="wind">--</dd></div>
+          <div><dt>Lluvia hoy</dt><dd id="rain">--</dd></div>
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <footer>Datos de <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a>. No requiere API key.</footer>
+</main>
+
+<script src="js/app.js"></script>
+</body>
+</html>
