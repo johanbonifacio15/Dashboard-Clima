@@ -12,7 +12,7 @@
   };
 
   const $ = (id) => document.getElementById(id);
-  const state = { place: DEFAULT_PLACE, unit: "celsius" };
+  const state = { place: DEFAULT_PLACE, unit: "celsius", charts: {} };
 
   // ---------- Red con timeout y errores legibles ----------
   class ApiError extends Error {}
@@ -79,6 +79,9 @@
   }
 
   // ---------- Render ----------
+  const css = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  const dayLabel = (iso) => new Date(iso + "T12:00").toLocaleDateString("es", { weekday: "short", day: "numeric" });
+  const hourLabel = (iso) => new Date(iso).toLocaleTimeString("es", { hour: "numeric", hour12: true });
   const deg = (n) => `${Math.round(n)}°`;
 
   function render(data) {
@@ -96,6 +99,55 @@
 
     $("status").hidden = true;
     $("dashboard").hidden = false;
+
+    // Gráfica diaria: máxima y mínima
+    drawChart("dailyChart", {
+      type: "line",
+      data: {
+        labels: daily.time.map(dayLabel),
+        datasets: [
+          { label: `Máx (°${sym})`, data: daily.temperature_2m_max, borderColor: css("--warm"), backgroundColor: css("--warm"), tension: .35 },
+          { label: `Mín (°${sym})`, data: daily.temperature_2m_min, borderColor: css("--cold"), backgroundColor: css("--cold"), tension: .35 }
+        ]
+      },
+      options: baseOptions({ y: { ticks: { callback: (v) => v + "°" } } })
+    });
+
+    // Gráfica por hora: desde la hora actual, 24 horas
+    const start = Math.max(0, hourly.time.findIndex((t) => t.startsWith(c.time.slice(0, 13))));
+    const slice = (arr) => arr.slice(start, start + 24);
+    drawChart("hourlyChart", {
+      data: {
+        labels: slice(hourly.time).map(hourLabel),
+        datasets: [
+          { type: "bar", label: "Prob. de lluvia (%)", data: slice(hourly.precipitation_probability), backgroundColor: css("--rain") + "99", yAxisID: "y2", order: 2 },
+          { type: "line", label: `Temp (°${sym})`, data: slice(hourly.temperature_2m), borderColor: css("--warm"), backgroundColor: css("--warm"), pointRadius: 0, tension: .35, yAxisID: "y", order: 1 }
+        ]
+      },
+      options: baseOptions({
+        y: { position: "left", ticks: { callback: (v) => v + "°" } },
+        y2: { position: "right", min: 0, max: 100, grid: { drawOnChartArea: false }, ticks: { callback: (v) => v + "%" } },
+        x: { ticks: { maxTicksLimit: 8 } }
+      })
+    });
+  }
+
+  function baseOptions(scales) {
+    const muted = css("--muted"), line = css("--line");
+    const withTheme = Object.fromEntries(Object.entries({ x: {}, y: {}, ...scales }).map(([k, v]) => [
+      k, { ...v, grid: { color: line, ...(v.grid || {}) }, ticks: { color: muted, ...(v.ticks || {}) } }
+    ]));
+    return {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: "index", intersect: false },
+      plugins: { legend: { labels: { color: muted, usePointStyle: true, boxWidth: 8 } } },
+      scales: withTheme
+    };
+  }
+
+  function drawChart(id, config) {
+    state.charts[id]?.destroy();
+    state.charts[id] = new Chart($(id), config);
   }
 
   // ---------- Flujo principal ----------
