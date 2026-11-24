@@ -12,6 +12,28 @@
     96: "Tormenta con granizo", 99: "Tormenta fuerte con granizo"
   };
 
+  function skyFor(code) {
+    if (code <= 1) return "clear";
+    if (code <= 3) return "cloudy";
+    if (code <= 48) return "fog";
+    if (code <= 67) return "rain";
+    if (code <= 77) return "snow";
+    if (code <= 82) return "rain";
+    if (code <= 86) return "snow";
+    return "storm";
+  }
+
+  function iconFor(code, isDay) {
+    switch (skyFor(code)) {
+      case "clear": return isDay ? "☀️" : "🌙";
+      case "cloudy": return code === 2 && isDay ? "⛅" : "☁️";
+      case "fog": return "🌫️";
+      case "rain": return code >= 51 && code <= 55 ? "🌦️" : "🌧️";
+      case "snow": return "❄️";
+      default: return "⛈️";
+    }
+  }
+
   const $ = (id) => document.getElementById(id);
   const state = { place: loadPlace(), unit: "celsius", charts: {} };
 
@@ -56,7 +78,7 @@
   const getForecast = async ({ latitude, longitude }, unit) => {
     const data = await fetchJson(FORECAST_URL, {
       latitude, longitude, timezone: "auto", forecast_days: 7, temperature_unit: unit,
-      current: "temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m",
+      current: "temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,is_day",
       hourly: "temperature_2m,precipitation_probability",
       daily: "temperature_2m_max,temperature_2m_min,precipitation_sum"
     });
@@ -105,8 +127,15 @@
     $("temp").textContent = Math.round(c.temperature_2m);
     $("unit").textContent = `°${sym}`;
     $("cond").textContent = WEATHER_CODES[c.weather_code] ?? "Condición desconocida";
+
+    const isDay = c.is_day === 1;
+    document.body.dataset.sky = skyFor(c.weather_code);
+    document.body.dataset.day = isDay ? "1" : "0";
+    $("icon").textContent = iconFor(c.weather_code, isDay);
+
     $("feels").textContent = deg(c.apparent_temperature);
     $("humidity").textContent = `${c.relative_humidity_2m}%`;
+    $("humidity").closest(".stat").style.setProperty("--v", c.relative_humidity_2m);
     $("wind").textContent = `${Math.round(c.wind_speed_10m)} km/h`;
     $("rain").textContent = `${daily.precipitation_sum[0].toFixed(1)} mm`;
 
@@ -159,6 +188,7 @@
   }
 
   function drawChart(id, config) {
+    Chart.defaults.font.family = css("--body");
     state.charts[id]?.destroy();
     state.charts[id] = new Chart($(id), config);
   }
@@ -225,7 +255,6 @@
     });
   }
 
-  // Convierte coordenadas en nombre de ciudad.
   async function getPlaceName(latitude, longitude) {
     try {
       const data = await fetchJson(REVERSE_URL, { latitude, longitude, localityLanguage: "es" });
