@@ -2,6 +2,8 @@
 
 Dashboard del clima hecho con HTML, CSS y JavaScript puro. Consume la API de [Open-Meteo](https://open-meteo.com/) y muestra el clima de la ciudad que elijas con gráficas de [Chart.js](https://www.chartjs.org/).
 
+**Demo:** https://johanbonifacio15.github.io/Dashboard-Clima/
+
 ## Características
 
 - **Clima actual:** temperatura, sensación térmica, humedad, viento y lluvia del día.
@@ -21,7 +23,7 @@ Dashboard del clima hecho con HTML, CSS y JavaScript puro. Consume la API de [Op
 - [x] Buscador de ciudades
 - [x] Gráficas con Chart.js
 - [x] Unidades °C/°F y ciudad guardada
-- [ ] Despliegue en GitHub Pages
+- [x] Despliegue en GitHub Pages
 
 ## API utilizada
 
