@@ -12,7 +12,15 @@
   };
 
   const $ = (id) => document.getElementById(id);
-  const state = { place: DEFAULT_PLACE, unit: "celsius", charts: {} };
+  const state = { place: loadPlace(), unit: "celsius", charts: {} };
+
+  function loadPlace() {
+    try { return JSON.parse(localStorage.getItem("weather:place")) || DEFAULT_PLACE; }
+    catch { return DEFAULT_PLACE; }
+  }
+  function savePlace(p) {
+    try { localStorage.setItem("weather:place", JSON.stringify(p)); } catch { /* storage no disponible */ }
+  }
 
   // ---------- Red con timeout y errores legibles ----------
   class ApiError extends Error {}
@@ -195,12 +203,21 @@
 
   function selectPlace(r) {
     state.place = { name: r.name, admin1: r.admin1, country: r.country, latitude: r.latitude, longitude: r.longitude };
+    savePlace(state.place);
     $("suggestions").hidden = true;
     $("q").value = "";
     load();
   }
 
   $("search").addEventListener("submit", onSearch);
+  document.querySelectorAll("[data-unit]").forEach((btn) =>
+    btn.addEventListener("click", () => {
+      if (state.unit === btn.dataset.unit) return;
+      state.unit = btn.dataset.unit;
+      document.querySelectorAll("[data-unit]").forEach((b) => b.setAttribute("aria-pressed", String(b === btn)));
+      load();
+    })
+  );
 
   load();
 })();
