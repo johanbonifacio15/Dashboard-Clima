@@ -1,3 +1,7 @@
+/* ==========================================================================
+   Dashboard del clima
+   ========================================================================== */
+
 /* ---------- Variables ---------- */
 
 :root {
@@ -12,11 +16,12 @@
   --rain: #3a7bd5;
   --danger: #b3261e;
 
+  /* Tipografías */
   --display: "Bricolage Grotesque", "Trebuchet MS", sans-serif;
   --body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 
-/* Modo oscuro (segun la preferencia del sistema) */
+/* Modo oscuro (según la preferencia del sistema) */
 @media (prefers-color-scheme: dark) {
   :root {
     --bg: #0b1a20;
@@ -65,7 +70,7 @@ h1 {
   margin: 0;
 }
 
-/* ---------- Controles ---------- */
+/* ---------- Controles (formulario y botones) ---------- */
 
 .controls {
   display: flex;
@@ -173,7 +178,26 @@ dd {
   font: 500 1.5rem var(--display);
 }
 
-/* ---------- Estados ---------- */
+/* ---------- Gráficas ---------- */
+
+.charts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+h2 {
+  font: 700 1rem var(--display);
+  margin: 0 0 12px;
+}
+
+.chart-box {
+  position: relative;
+  height: 260px;
+}
+
+/* ---------- Estados: carga y error ---------- */
 
 .state {
   text-align: center;
@@ -212,7 +236,7 @@ dd {
   }
 }
 
-/* ---------- Pie de pagina y utilidades ---------- */
+/* ---------- Pie de página y utilidades ---------- */
 
 footer {
   color: var(--muted);
@@ -231,7 +255,8 @@ footer a {
 /* ---------- Responsive ---------- */
 
 @media (max-width: 760px) {
-  .hero {
+  .hero,
+  .charts {
     grid-template-columns: 1fr;
   }
 
