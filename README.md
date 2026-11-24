@@ -11,6 +11,8 @@ Dashboard del clima hecho con HTML, CSS y JavaScript puro. Consume la API de [Op
 - **Buscador de ciudades** con geocoding (si hay varias coincidencias, se elige de una lista).
 - **Gráfica de 7 días:** temperaturas máximas y mínimas.
 - **Gráfica de 24 horas:** temperatura y probabilidad de lluvia.
+- Cambio de unidades entre °C y °F.
+- Recuerda la última ciudad consultada (`localStorage`).
 
 ## Roadmap
 
@@ -18,7 +20,7 @@ Dashboard del clima hecho con HTML, CSS y JavaScript puro. Consume la API de [Op
 - [x] Manejo de errores y estados de carga
 - [x] Buscador de ciudades
 - [x] Gráficas con Chart.js
-- [ ] Unidades °C/°F y ciudad guardada
+- [x] Unidades °C/°F y ciudad guardada
 - [ ] Despliegue en GitHub Pages
 
 ## API utilizada

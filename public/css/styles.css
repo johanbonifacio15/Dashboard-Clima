@@ -109,6 +109,27 @@ input:focus-visible {
   outline-offset: 2px;
 }
 
+/* Selector de unidades (°C / °F) */
+
+.seg button {
+  border-radius: 0;
+}
+
+.seg button:first-child {
+  border-radius: 8px 0 0 8px;
+}
+
+.seg button:last-child {
+  border-radius: 0 8px 8px 0;
+  border-left: 0;
+}
+
+.seg button[aria-pressed="true"] {
+  background: var(--ink);
+  color: var(--bg);
+  border-color: var(--ink);
+}
+
 /* Sugerencias de ciudades */
 
 .suggestions {
