@@ -1,7 +1,8 @@
 (() => {
   const FORECAST_URL = "https://api.open-meteo.com/v1/forecast";
   const GEO_URL = "https://geocoding-api.open-meteo.com/v1/search";
-  const DEFAULT_PLACE = { name: "San Pedro de Macorís", country: "República Dominicana", latitude: 18.4617, longitude: -69.3086 };
+  const REVERSE_URL = "https://api.bigdatacloud.net/data/reverse-geocode-client";
+  const DEFAULT_PLACE = { name: "Santo Domingo", admin1: "Distrito Nacional", country: "República Dominicana", latitude: 18.4861, longitude: -69.9312 };
 
   const WEATHER_CODES = {
     0: "Despejado", 1: "Mayormente despejado", 2: "Parcialmente nublado", 3: "Nublado",
@@ -17,6 +18,10 @@
   function loadPlace() {
     try { return JSON.parse(localStorage.getItem("weather:place")) || DEFAULT_PLACE; }
     catch { return DEFAULT_PLACE; }
+  }
+  function hasSavedPlace() {
+    try { return localStorage.getItem("weather:place") !== null; }
+    catch { return false; }
   }
   function savePlace(p) {
     try { localStorage.setItem("weather:place", JSON.stringify(p)); } catch { /* storage no disponible */ }
@@ -201,6 +206,51 @@
     if (lastData) $("dashboard").hidden = false;
   }
 
+  // ---------- Ubicación del usuario ----------
+  function getPosition() {
+    return new Promise((resolve, reject) => {
+      if (!("geolocation" in navigator)) {
+        return reject(new ApiError("Tu navegador no soporta la geolocalización."));
+      }
+      const messages = {
+        1: "Permiso de ubicación denegado. Puedes buscar tu ciudad manualmente.",
+        2: "No se pudo determinar tu ubicación.",
+        3: "La ubicación tardó demasiado en responder."
+      };
+      navigator.geolocation.getCurrentPosition(
+        resolve,
+        (err) => reject(new ApiError(messages[err.code] || "No se pudo obtener tu ubicación.")),
+        { timeout: 10000, maximumAge: 600000 }
+      );
+    });
+  }
+
+  // Convierte coordenadas en nombre de ciudad.
+  async function getPlaceName(latitude, longitude) {
+    try {
+      const data = await fetchJson(REVERSE_URL, { latitude, longitude, localityLanguage: "es" });
+      return {
+        name: data.city || data.locality || "Mi ubicación",
+        admin1: data.principalSubdivision,
+        country: data.countryName?.replace(/\s*\(.*\)$/, "")
+      };
+    } catch {
+      return { name: "Mi ubicación" };
+    }
+  }
+
+  async function useMyLocation({ silent = false } = {}) {
+    showLoading();
+    try {
+      const { coords } = await getPosition();
+      const info = await getPlaceName(coords.latitude, coords.longitude);
+      selectPlace({ ...info, latitude: coords.latitude, longitude: coords.longitude });
+    } catch (err) {
+      if (silent) return load();
+      showError(err.message, () => useMyLocation());
+    }
+  }
+
   function selectPlace(r) {
     state.place = { name: r.name, admin1: r.admin1, country: r.country, latitude: r.latitude, longitude: r.longitude };
     savePlace(state.place);
@@ -210,6 +260,7 @@
   }
 
   $("search").addEventListener("submit", onSearch);
+  $("locate").addEventListener("click", () => useMyLocation());
   document.querySelectorAll("[data-unit]").forEach((btn) =>
     btn.addEventListener("click", () => {
       if (state.unit === btn.dataset.unit) return;
@@ -219,5 +270,6 @@
     })
   );
 
-  load();
+  if (hasSavedPlace()) load();
+  else useMyLocation({ silent: true });
 })();

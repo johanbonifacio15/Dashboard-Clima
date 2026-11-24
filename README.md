@@ -15,17 +15,11 @@ Dashboard del clima hecho con HTML, CSS y JavaScript puro. Consume la API de [Op
 - **Gráfica de 24 horas:** temperatura y probabilidad de lluvia.
 - Cambio de unidades entre °C y °F.
 - Recuerda la última ciudad consultada (`localStorage`).
+- **Detección de ubicación:** en la primera visita usa tu ubicación (con tu permiso) y hay un botón para volver a detectarla.
 
-## Roadmap
-
-- [x] Clima actual con Open-Meteo
-- [x] Manejo de errores y estados de carga
-- [x] Buscador de ciudades
-- [x] Gráficas con Chart.js
-- [x] Unidades °C/°F y ciudad guardada
-- [x] Despliegue en GitHub Pages
 
 ## API utilizada
 
 - Geocoding: `https://geocoding-api.open-meteo.com/v1/search`
 - Pronóstico: `https://api.open-meteo.com/v1/forecast`
+- Nombre de la ubicación: `https://api.bigdatacloud.net/data/reverse-geocode-client` ([BigDataCloud](https://www.bigdatacloud.com/))
